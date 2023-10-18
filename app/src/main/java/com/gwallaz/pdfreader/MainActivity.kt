@@ -11,37 +11,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.gwallaz.pdfreader.ui.theme.PDFReaderTheme
+import com.gwallaz.pdfreader.user_interface.bottom_navigation.BottomBar
+import com.gwallaz.pdfreader.user_interface.bottom_navigation.bottomBar
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            PDFReaderTheme {
-                // A surface container using the 'background' color from the theme
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    Greeting("Android")
-                }
+
+            bottomBar()
             }
         }
     }
-}
 
 
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
 
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    PDFReaderTheme {
-        Greeting("Android")
-    }
-}
