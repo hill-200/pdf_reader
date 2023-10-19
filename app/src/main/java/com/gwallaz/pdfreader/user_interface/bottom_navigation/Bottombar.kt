@@ -29,7 +29,7 @@ import com.gwallaz.pdfreader.user_interface.navigation.Screens
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Preview
 @Composable
-    fun bottomBar() {
+    fun Bottombar() {
         val navController:NavHostController = rememberNavController()
         val buttonsVisible = remember{mutableStateOf(true)}
 
