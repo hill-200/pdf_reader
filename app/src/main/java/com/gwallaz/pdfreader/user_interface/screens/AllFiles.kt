@@ -1,30 +1,14 @@
 package com.gwallaz.pdfreader.user_interface.screens
 
 import android.annotation.SuppressLint
-import androidx.compose.foundation.ScrollState
-import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.FlingBehavior
-import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.ScrollScope
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowColumn
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.displayCutout
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.absolutePadding
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.paddingFromBaseline
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.layout.windowInsetsBottomHeight
-import androidx.compose.foundation.layout.windowInsetsEndWidth
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -32,8 +16,6 @@ import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
@@ -48,7 +30,6 @@ import androidx.compose.material.icons.outlined.Send
 import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.Divider
-import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -57,31 +38,30 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
-import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.NavigationDrawerItemDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchColors
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.structuralEqualityPolicy
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.graphics.BlendMode.Companion.Color
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.layout.ModifierLocalBeyondBoundsLayout
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
@@ -90,7 +70,6 @@ data class DrawerItems(
     val selecteditem: ImageVector? = null,
     val title: String? = null,
     val unselecteditem: ImageVector? = null,
-    val switch: SwitchColors? = null
 )
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -111,11 +90,13 @@ data class DrawerItems(
             selecteditem = Icons.Filled.Share,
             title = "Share App",
             unselecteditem = Icons.Outlined.Share
+
         ),
         DrawerItems(
             selecteditem = Icons.Filled.Send,
             title = "Security Question",
-            unselecteditem = Icons.Outlined.Send
+            unselecteditem = Icons.Outlined.Send,
+
         ),
         DrawerItems(
             selecteditem = Icons.Filled.AccountCircle,
@@ -150,46 +131,97 @@ data class DrawerItems(
 
     val scrollBehaviour = TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
-    val backgroundAlpha = if (drawerState.isOpen) 0.3f else 1.0f
-    val backgroundColor = androidx.compose.ui.graphics.Color.Gray
     val drawerScope = rememberCoroutineScope()
-    var selectedItemIndex by rememberSaveable {
-        mutableIntStateOf(0)
-    }
-    val drawerWidth =
-        (LocalDensity.current.run { LocalConfiguration.current.screenWidthDp.dp * 3 / 4 })
-    val maxHeight = 700.dp
-
+    var selectedItemIndex by rememberSaveable { mutableIntStateOf(0) }
+    var checkedSecurity by remember { mutableStateOf(false) }
+    var checkedDarkmode by remember { mutableStateOf(false) }
+    var checkedKeepscreenon by remember { mutableStateOf(false) }
 
     ModalNavigationDrawer(
         drawerContent = {
             ModalDrawerSheet {
                 Spacer(
                     modifier = Modifier
-                        .height(16.dp)
+                        .height(4.dp)
                         .fillMaxWidth(0.7f)
                         .alpha(0.3f)
                 )
-
                 Column {
-
-
                     items.forEachIndexed { index, item ->
                         NavigationDrawerItem(
-
                             label = {
                                 item.title?.let { Text(text = it) }
-                                //when(item.title){
-                                //     "Settings" -> Divider(modifier = Modifier.height(2.dp).padding(16.dp), color = androidx.compose.ui.graphics.Color.LightGray)
-                                // }
 
+                                //Adding switch widget
+                                when(item.title){
+                                    "Security Question" -> Switch(
+                                        checked = checkedSecurity,
+                                        onCheckedChange ={checkedSecurity = it},
+                                        modifier = Modifier
+                                            .absolutePadding(left = 140.dp)
+                                            .size(20.dp)
+                                            .scale(0.7f, 0.7f),
+                                        colors = SwitchDefaults.colors(
+                                            checkedThumbColor = Color.Cyan,
+                                            checkedTrackColor = Color.Transparent,
+                                            checkedBorderColor = Color.Cyan
 
+                                        )
+                                    )
+
+                                    "Dark Mode" ->  Switch(
+                                        checked = checkedDarkmode,
+                                        onCheckedChange ={checkedDarkmode = it},
+                                        modifier = Modifier
+                                            .absolutePadding(left = 140.dp)
+                                            .size(20.dp)
+                                            .scale(0.7f, 0.7f),
+                                        colors = SwitchDefaults.colors(
+                                            checkedThumbColor = Color.Cyan,
+                                            checkedBorderColor = Color.Cyan,
+                                            checkedTrackColor = Color.Transparent
+
+                                        )
+                                    )
+
+                                    "Keep screen on" ->  Switch(
+                                        checked = checkedKeepscreenon,
+                                        onCheckedChange ={checkedKeepscreenon = it},
+                                        modifier = Modifier
+                                            .absolutePadding(left = 140.dp)
+                                            .size(20.dp)
+                                            .scale(0.7f, 0.7f),
+                                        colors = SwitchDefaults.colors(
+                                            checkedThumbColor = Color.Cyan,
+                                            checkedTrackColor = Color.Transparent,
+                                            checkedBorderColor = Color.Cyan
+                                        )
+
+                                            )
+
+                                    "Settings" -> Text(text = "Settings",
+                                    color = Color.LightGray
+                                        )
+                                    "Version: 1.3.5c" -> Text(text = "Version: 1.3.5c",
+                                    color = Color.LightGray
+                                        )
+                                }
                             },
+
                             selected = index == selectedItemIndex,
+
+
                             onClick = {
                                 selectedItemIndex = index
-                                drawerScope.launch {
-                                    drawerState.close()
+
+                                //Get exact item clicked
+                                when(selectedItemIndex){
+                                    0 -> {}
+                                    1 -> {
+                                        drawerScope.launch {
+                                            drawerState.close()
+                                        }
+                                    }
                                 }
                             },
                             icon = {
@@ -205,12 +237,11 @@ data class DrawerItems(
                                 }
                             },
                             modifier = Modifier
-                                .padding(NavigationDrawerItemDefaults.ItemPadding)
-
-                                .fillMaxWidth(0.7f)
-
-
+                                .padding(0.dp)
+                                .fillMaxWidth(0.8f)
                         )
+
+                        //Adding divider to the navigation drawer
                         if (item.title in listOf("PDF Reader", "Privacy Policy")) {
                             Divider(
                                 modifier = Modifier
@@ -219,6 +250,7 @@ data class DrawerItems(
                                 color = androidx.compose.ui.graphics.Color.LightGray
                             )
                         }
+
 
 
                     }
@@ -232,6 +264,7 @@ data class DrawerItems(
 
 
     )
+    //Background content inside lambda of ModalNavigationDrawer
     {
         Box {
 
