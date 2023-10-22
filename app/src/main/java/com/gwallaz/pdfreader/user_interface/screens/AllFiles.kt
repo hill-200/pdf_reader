@@ -1,6 +1,8 @@
 package com.gwallaz.pdfreader.user_interface.screens
 
 import android.annotation.SuppressLint
+import android.content.Context
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -39,10 +41,8 @@ import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationDrawerItem
-import androidx.compose.material3.NavigationDrawerItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchColors
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -64,6 +64,9 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.gwallaz.pdfreader.MainActivity
+import com.gwallaz.pdfreader.user_interface.navigation_drawer_actions.ShareApp
+import com.gwallaz.pdfreader.viewmodel.ViewModel
 import kotlinx.coroutines.launch
 
 data class DrawerItems(
@@ -75,7 +78,7 @@ data class DrawerItems(
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
-    fun AllFiles() {
+    fun AllFiles(context: Context, darkViewModel: ViewModel ) {
 
     val items = listOf(
         DrawerItems(
@@ -136,6 +139,8 @@ data class DrawerItems(
     var checkedSecurity by remember { mutableStateOf(false) }
     var checkedDarkmode by remember { mutableStateOf(false) }
     var checkedKeepscreenon by remember { mutableStateOf(false) }
+    val share  = ShareApp()
+    val textMessage = "Hey, I am using PDFReader and I am having a wonderful experience. You can download it from Play Store"
 
     ModalNavigationDrawer(
         drawerContent = {
@@ -168,10 +173,18 @@ data class DrawerItems(
 
                                         )
                                     )
-
+                                     //Setting night mode
                                     "Dark Mode" ->  Switch(
-                                        checked = checkedDarkmode,
-                                        onCheckedChange ={checkedDarkmode = it},
+                                        checked = darkViewModel.isDarkMode.value,
+                                        onCheckedChange ={checked ->
+                                            darkViewModel.isDarkMode.value = checked
+                                          //  val nightMode = if(checked){
+                                           //     AppCompatDelegate.MODE_NIGHT_YES
+                                           // } else {
+                                           //     AppCompatDelegate.MODE_NIGHT_NO
+                                          //  }
+                                           // AppCompatDelegate.setDefaultNightMode(nightMode)
+                                        },
                                         modifier = Modifier
                                             .absolutePadding(left = 140.dp)
                                             .size(20.dp)
@@ -222,6 +235,13 @@ data class DrawerItems(
                                             drawerState.close()
                                         }
                                     }
+                                    2 -> {
+                                        share.share(context,textMessage)
+
+                                        drawerScope.launch {
+                                            drawerState.close()
+                                        }
+                                    }
                                 }
                             },
                             icon = {
@@ -247,7 +267,7 @@ data class DrawerItems(
                                 modifier = Modifier
                                     .fillMaxWidth(0.7f)
                                     .padding(start = 4.dp),
-                                color = androidx.compose.ui.graphics.Color.LightGray
+                                color = Color.LightGray
                             )
                         }
 
@@ -324,7 +344,10 @@ data class DrawerItems(
             }
 
     }
-}}
+
+}
+
+}
 
 
 

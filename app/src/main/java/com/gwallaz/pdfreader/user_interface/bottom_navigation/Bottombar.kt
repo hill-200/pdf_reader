@@ -1,6 +1,7 @@
 package com.gwallaz.pdfreader.user_interface.bottom_navigation
 
 import android.annotation.SuppressLint
+import android.content.Context
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -27,9 +28,9 @@ import com.gwallaz.pdfreader.user_interface.navigation.Screens
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
-@Preview
+
 @Composable
-    fun Bottombar() {
+    fun Bottombar(context: Context) {
         val navController:NavHostController = rememberNavController()
         val buttonsVisible = remember{mutableStateOf(true)}
 
@@ -38,7 +39,7 @@ import com.gwallaz.pdfreader.user_interface.navigation.Screens
                 BottomBar(navController = navController, state = buttonsVisible)
             }
         ) {
-          BottomNav(navController = navController)
+          BottomNav(navController = navController, context =context )
 
         }
     }
