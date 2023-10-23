@@ -2,9 +2,14 @@ package com.gwallaz.pdfreader.user_interface.screens
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.util.Log
+import android.widget.CheckBox
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.absolutePadding
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -18,6 +23,7 @@ import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
@@ -31,6 +37,7 @@ import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Send
 import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material.icons.outlined.Star
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -38,6 +45,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MediumTopAppBar
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationDrawerItem
@@ -47,6 +55,7 @@ import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -56,29 +65,58 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.gwallaz.pdfreader.MainActivity
+import com.gwallaz.pdfreader.R
 import com.gwallaz.pdfreader.user_interface.navigation_drawer_actions.ShareApp
 import com.gwallaz.pdfreader.viewmodel.ViewModel
 import kotlinx.coroutines.launch
 
 data class DrawerItems(
     val selecteditem: ImageVector? = null,
+    val bottomSheetItem: Int? = null,
     val title: String? = null,
     val unselecteditem: ImageVector? = null,
+
 )
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     fun AllFiles(context: Context, darkViewModel: ViewModel ) {
+
+    val bottomSheetContent = listOf(
+        DrawerItems(
+            bottomSheetItem = R.drawable.baseline_date_range_24,
+            title = "Last Modified"
+        ),
+        DrawerItems(
+            bottomSheetItem = R.drawable.baseline_content_name,
+        title = "Name"
+        ),
+    DrawerItems(
+        bottomSheetItem = R.drawable.baseline_file_size,
+        title = "File Size"
+    ),
+        DrawerItems(
+            bottomSheetItem = R.drawable.baseline_new_to_old,
+            title = "From new to old"
+        ),
+        DrawerItems(
+            bottomSheetItem = R.drawable.baseline_old_to_new,
+            title = "From old to new"
+        )
+    )
 
     val items = listOf(
         DrawerItems(
@@ -141,6 +179,10 @@ data class DrawerItems(
     var checkedKeepscreenon by remember { mutableStateOf(false) }
     val share  = ShareApp()
     val textMessage = "Hey, I am using PDFReader and I am having a wonderful experience. You can download it from Play Store"
+    val sheetState = rememberModalBottomSheetState()
+    val scope = rememberCoroutineScope()
+    var bottomSheet by remember { mutableStateOf(false) }
+    
 
     ModalNavigationDrawer(
         drawerContent = {
@@ -286,7 +328,6 @@ data class DrawerItems(
     )
     //Background content inside lambda of ModalNavigationDrawer
     {
-        Box {
 
 
         Scaffold(
@@ -323,31 +364,176 @@ data class DrawerItems(
                         }
                     },
                     actions = {
+
+                        //Action button to open bottom sheet
+                        IconButton(onClick = {
+                            Log.d("Message","Action button to open bottom sheet is clicked")
+                            bottomSheet = true
+                            scope.launch {
+                                sheetState.show()
+                            }
+
+                        }) {
+                            Icon(
+                                imageVector = Icons.Filled.List,
+                                contentDescription = "Bottom sheet"
+                            )
+                        }
+
+
+                       //Action button to search files
                         IconButton(onClick = {}) {
                             Icon(
                                 imageVector = Icons.Filled.Search,
                                 contentDescription = "Search action"
                             )
                         }
+
+
+                        //Action button to select all files
                         IconButton(onClick = {}) {
                             Icon(
                                 imageVector = Icons.Filled.Check,
                                 contentDescription = "Check box"
                             )
                         }
+
+
                     },
                     scrollBehavior = scrollBehaviour
                 )
-            },
-        ) {
-
             }
+        ) {
+            //Content of scaffold goes in here
+         if (bottomSheet) {
+             ModalBottomSheet(
+                 onDismissRequest = {
+                     bottomSheet = false
+                 },
+                 sheetState = sheetState
+             ) {//Content of bottom sheet starts here
+                 Text(text = "Sort by:",
+                     modifier = Modifier
+                         .padding(start = 16.dp),
+                     fontStyle = FontStyle.Normal,
+                 )
+                 Divider(
+                     modifier = Modifier
+                         .fillMaxWidth()
+                         .padding(start = 4.dp, end = 4.dp),
+                     color = Color.LightGray
+                 )
+                 Column(
+                     modifier = Modifier
+                         .fillMaxWidth()
+                         .background(MaterialTheme.colorScheme.surface)
+                         .padding(16.dp)
+                 ) {
+                     Row(
+                         verticalAlignment = Alignment.CenterVertically,
+                         horizontalArrangement = Arrangement.SpaceBetween
+                     ) {
+                         Icon(imageVector = ImageVector.vectorResource(id = R.drawable.baseline_date_range_24), contentDescription = null )
+                         Text(text = "Last Modified",
+                             modifier = Modifier
+                                 .padding(start = 10.dp)
+                         )
+                         Checkbox(
+                             modifier = Modifier
+                                 .padding(start = 130.dp),
+                             checked = true,
+                              onCheckedChange = {/* Handle checkbox state changes*/}
+                         )
+                     }
+
+                     Row(
+                         verticalAlignment = Alignment.CenterVertically,
+                         horizontalArrangement = Arrangement.SpaceBetween
+                     ) {
+                         Icon(imageVector = ImageVector.vectorResource(id = R.drawable.baseline_content_name), contentDescription = null )
+                         Text(text = "Name",
+                             modifier = Modifier
+                                 .padding(start = 10.dp)
+                         )
+                         Checkbox(
+                             modifier = Modifier
+                                 .padding(start = 185.dp),
+                             checked = true,
+                             onCheckedChange = {/* Handle checkbox state changes*/}
+                         )
+                     }
+
+                     Row(
+                         verticalAlignment = Alignment.CenterVertically,
+                         horizontalArrangement = Arrangement.SpaceBetween
+                     ) {
+                         Icon(imageVector = ImageVector.vectorResource(id = R.drawable.baseline_file_size), contentDescription = null )
+                         Text(text = "File Size",
+                             modifier = Modifier
+                                 .padding(start = 10.dp)
+                         )
+                         Checkbox(
+                             modifier = Modifier
+                                 .padding(start = 170.dp),
+                             checked = true,
+                             onCheckedChange = {/* Handle checkbox state changes*/}
+                         )
+                     }
+
+                     Row(
+                         verticalAlignment = Alignment.CenterVertically,
+                         horizontalArrangement = Arrangement.SpaceBetween
+                     ) {
+                         Icon(imageVector = ImageVector.vectorResource(id = R.drawable.baseline_new_to_old), contentDescription = null )
+                         Text(text = "From new to old",
+                             modifier = Modifier
+                                 .padding(start = 10.dp)
+                         )
+                         Checkbox(
+                             modifier = Modifier
+                                 .padding(start = 120.dp),
+                             checked = true,
+                             onCheckedChange = {/* Handle checkbox state changes*/}
+                         )
+                     }
+
+                     Row(
+                         verticalAlignment = Alignment.CenterVertically,
+                         horizontalArrangement = Arrangement.SpaceBetween
+                     ) {
+                         Icon(imageVector = ImageVector.vectorResource(id = R.drawable.baseline_old_to_new), contentDescription = null )
+                         Text(text = "From old to new",
+                             modifier = Modifier
+                                 .padding(start = 10.dp)
+                         )
+                         Checkbox(
+                             modifier = Modifier
+                                 .padding(start = 120.dp),
+                             checked = true,
+                             onCheckedChange = {/* Handle checkbox state changes*/}
+                         )
+                     }
+
+                     Row(
+                         verticalAlignment = Alignment.CenterVertically,
+                         horizontalArrangement = Arrangement.SpaceBetween
+                     ) {
+                         //Buttons for cancelling and Ok go here
+                     }
+
+
+                     }
+
+                 }
+
+
+             }//Content of bottom sheet ends here
+
+         }
 
     }
-
 }
 
-}
 
 
 
