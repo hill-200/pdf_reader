@@ -17,9 +17,9 @@ import com.gwallaz.pdfreader.viewmodel.ViewModel
     fun BottomNav(navController: NavHostController,context: Context){
         NavHost(navController = navController, startDestination = Screens.AllFiles.route){
             composable(Screens.AllFiles.route){
-                val darkViewModel: ViewModel = ViewModel()
-                val s = darkViewModel.isDarkMode.value
-                AllFiles(context,darkViewModel)
+                //val darkViewModel: ViewModel = ViewModel()
+                //val s = darkViewModel.isDarkMode.value
+                AllFiles(context)
             }
 
             composable(Screens.Recent.route){
